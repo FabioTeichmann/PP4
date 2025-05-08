@@ -58,7 +58,13 @@ In this exercise you will:
 # 1) The exact ssh command you ran
 # 2) A detailed, step-by-step explanation of what happened at each stage
 ```
-
+1)  ssh fabioteichmann@flipbook
+2) -Es wurde eine TCP-Verbindung zu Port 22 von flipbook aufgebaut.
+   -Der SSH-Client und der Server führten einen Handshake durch (Aushandlung von         
+    Verschlüsselung und Austausch temporärer Schlüssel).
+   -Die Authentifizierung erfolgte per Passwort.
+   -Nach erfolgreicher Anmeldung wurde eine Bash-Shell auf dem Remote-Server geöffnet.
+   -Mit "exit" wurde die Verbindung korrekt beendet.
 ---
 
 ### Task 2: Ed25519 Key Pair
@@ -88,6 +94,10 @@ In this exercise you will:
 # 2) The file paths of the generated keys
 # 3) Your written explanation (3–5 sentences) of the signature process
 ```
+1) ssh-keygen -t ed25519 -C "fabio.teichmann@stud-thga.de"
+2) Enter file in which to save the key (/home/fabioteichmann/.ssh/id_ed25519)
+3) Beim Login über SSH sendet der Server eine zufällige Prüfnachricht an meinen lokalen Rechner. Mein SSH-Client verwendet den privaten Schlüssel "~/.ssh/id_ed25519", um diese Nachricht mit meiner Passphrase zu signieren. Der Server überprüft diese Signatur mithilfe des öffentlichen Schlüssels, der in "~/.ssh/authorized_keys" hinterlegt ist. Ist die Signatur gültig, wird der Zugriff gewährt ohne dass ein Passwort für das Benutzerkonto nötig ist. Der private Schlüssel bleibt dabei stets sicher auf meinem Gerät gespeichert.
+
 
 ---
 
@@ -121,6 +131,14 @@ In this exercise you will:
    * How SSH reads `~/.ssh/config` and matches hosts.
    * The difference between `HostName` and `Host`.
    * How aliases prevent long commands.
+  
+   1)Wenn man ein SSH-Befehl wie ssh server1 eingibt, durchsucht SSH die Datei ~/.ssh/config nach einem passenden Host-Eintrag. Sobald ein passender Eintrag gefunden wird, übernimmt SSH die dort definierten Einstellungen wie HostName, User, Port und IdentityFile. Dadurch werden die Verbindungsdetails automatisch ergänzt, ohne dass man sie jedes mal manuell angeben musst.
+   2)Host ist ein Alias, den man selbst wählt und später beim Verbindungsaufbau verwendet – z. B. ssh Server1.
+HostName dagegen ist der echte Name oder die IP-Adresse des Servers, zu dem die Verbindung hergestellt wird – also z. B. server1.example.com 
+Kurz: Host = ein Spitzname für den Server, HostName = die tatsächliche Adresse.
+  3)anstatt ssh -i ~/.ssh/id_ed25519 -p 2222 fabioteichmann@server2.example.com
+einzugeben, kann man einfach schreiben: ssh Server2
+Das spart Zeit, vermeidet Tippfehler und macht das Arbeiten mit mehreren Servern übersichtlich und effizient.
 
 **Provide:**
 
@@ -128,7 +146,18 @@ In this exercise you will:
 # 1) The full contents of your ~/.ssh/config
 # 2) A short explanation (3–4 sentences) of how the config simplifies connections
 ```
+1)
+Host Server1
+        HostName flipbook
+        User fabioteichmann
+        IdentityFile ~/.ssh/id_ed25519
 
+Host Server2
+        Hostname flipbook
+        User fabioteichmann
+        IdentityFile ~/.ssh/id_ed25519_Server2
+
+2) Die Datei "~/.ssh/config" speichert Verbindungsdetails SSH-Ziele. Durch Aliase wie Server1 und Server2 kann man sich mit einem kurzen Befehl verbinden, ohne jedes Mal Hostname, Benutzername, Port und Schlüsselpfad manuell anzugeben. 
 ---
 
 ### Task 4: SCP File Transfers
@@ -166,6 +195,17 @@ In this exercise you will:
 # 2) Any flags or options used
 # 3) A brief explanation (2–3 sentences) of scp’s mechanism
 ```
+1)  Datei von lokal → remote
+"scp ~/Dokumente/bericht.txt Server1:~/uploads/"
+    Datei von remote → lokal
+"scp Server1:~/uploads/bericht.txt ~/Downloads/"
+Datei von einem Verzeichnis zu einem anderen auf dem gleichen Remote-Host (Server1)
+"scp -r Server1:~/uploads/ Server1:~/backup/"
+
+2) "-r" wird verwendet, um ganze Verzeichnisse samt Inhalt zu kopieren.
+   Hostalias „Server1“ wurde über die Datei ~/.ssh/config definiert, wodurch HostName, User und IdentityFile automatisch übernommen wurden
+
+3) scp überträgt Dateien über eine verschlüsselte SSH-Verbindung. Dabei erfolgt die Authentifizierung wie bei einer normalen SSH-Sitzung per Passwort. Die gesamte Übertragung ist gegen Mitlesen und Manipulation geschützt.
 
 ---
 
